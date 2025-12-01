@@ -99,6 +99,20 @@ This project was created to support those in recovery. If you have ideas for fea
 📝 License
 
 MIT License 
+## 💖 About This Project
+
+Daybreak is freely available to help those in recovery. While MIT licensed 
+for maximum accessibility, I built this with love for the community.
+
+**If you use Daybreak in your project:**
+- ✨ A link back is appreciated but not required
+- 💙 Consider contributing improvements
+- 🌟 Let me know! I'd love to hear how it helps
+
+**Commercial users:** You're legally allowed, but please consider:
+- Supporting recovery communities
+- Contributing back to open source
+- Respecting the spirit of this project
 
 ⚠️ Disclaimer
 Daybreak is a supplemental tool and is not a replacement for professional medical advice, therapy, or support groups. If you're struggling with substance abuse, please reach out to a healthcare professional or support organization.
