@@ -1,0 +1,1210 @@
+import React, { useState, useEffect } from 'react';
+import { Calendar, BookOpen, Brain, Gamepad2, Trophy, Heart, Sparkles, Wind, Zap, Music, Camera, X, Users, MessageCircle, ThumbsUp, Send, Bell, BellOff } from 'lucide-react';
+
+const SobrietyApp = () => {
+  const [sobrietyDate, setSobrietyDate] = useState(null);
+  const [dayCount, setDayCount] = useState(0);
+  const [journalEntries, setJournalEntries] = useState([]);
+  const [currentPrompt, setCurrentPrompt] = useState('');
+  const [activeTab, setActiveTab] = useState('home');
+  const [gameScore, setGameScore] = useState(0);
+  const [memoryCards, setMemoryCards] = useState([]);
+  const [flippedCards, setFlippedCards] = useState([]);
+  const [matchedCards, setMatchedCards] = useState([]);
+  const [breathingActive, setBreathingActive] = useState(false);
+  const [breathPhase, setBreathPhase] = useState('inhale');
+  const [activeExercise, setActiveExercise] = useState(null);
+  const [forumPosts, setForumPosts] = useState([]);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [newPostType, setNewPostType] = useState('story');
+  const [showNewPostForm, setShowNewPostForm] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [lastNotificationDate, setLastNotificationDate] = useState(null);
+  const [wordGuess, setWordGuess] = useState('');
+  const [guessedLetters, setGuessedLetters] = useState([]);
+  const [currentWord, setCurrentWord] = useState(null);
+  const [wrongGuesses, setWrongGuesses] = useState(0);
+  const [gamesWon, setGamesWon] = useState(0);
+
+  const quotes = [
+    "Recovery is not a race. You don't have to feel guilty if it takes you longer than you thought it would.",
+    "One day at a time isn't just a cliché. It's how you heal.",
+    "The only person you are destined to become is the person you decide to be.",
+    "Your present circumstances don't determine where you can go; they merely determine where you start.",
+    "Strength doesn't come from what you can do. It comes from overcoming the things you once thought you couldn't.",
+    "Every accomplishment starts with the decision to try.",
+    "You are braver than you believe, stronger than you seem, and smarter than you think.",
+    "The comeback is always stronger than the setback."
+  ];
+
+  const journalPrompts = [
+    "What triggered a craving today, and how did you handle it?",
+    "What are three things you're grateful for in your recovery?",
+    "Describe a moment today when you felt proud of yourself.",
+    "What healthy coping mechanism worked well for you recently?",
+    "How has your relationship with yourself changed since starting this journey?",
+    "What does freedom mean to you today?",
+    "Write about someone who supports your recovery and why they matter.",
+    "What's one small victory you had this week?",
+    "How do you feel physically and emotionally right now?",
+    "What are you looking forward to in your sober future?"
+  ];
+
+  const scienceFacts = [
+    "After 72 hours of sobriety, your brain's dopamine receptors begin to repair themselves.",
+    "Within 1-3 months, your brain's ability to regulate mood improves significantly.",
+    "After 6 months, cognitive function including memory and focus shows measurable improvement.",
+    "Your liver can regenerate up to 90% of its tissue within just a few months of sobriety.",
+    "Sleep quality typically improves dramatically after the first month of sobriety.",
+    "Neural pathways associated with addiction can be rewired through consistent sobriety and new habits.",
+    "After 1 year, the risk of relapse decreases significantly as new neural patterns solidify.",
+    "Physical exercise during recovery can boost dopamine naturally and speed healing."
+  ];
+
+  const dailyAffirmations = [
+    "You are stronger than your cravings. You've got this.",
+    "Every day sober is a victory worth celebrating.",
+    "Your body is healing, your mind is clearing, your future is brightening.",
+    "You chose yourself today. That's powerful.",
+    "Recovery isn't linear, and that's okay. Keep going.",
+    "You're not alone in this journey. You're part of a community.",
+    "Your sobriety is a gift you give yourself every single day.",
+    "The hard days make the good days even better. You're doing amazing.",
+    "You've already overcome so much. Today is just one more day you can handle.",
+    "Your past doesn't define you. Your choices today do.",
+    "Every craving you resist makes you stronger.",
+    "You're rewriting your story, one day at a time.",
+    "Your brain is healing. Your body is recovering. Trust the process.",
+    "You deserve the life you're building in sobriety.",
+    "Some days are harder than others, but you're still here. That counts."
+  ];
+
+  const weeklyTopics = [
+    {
+      week: 1,
+      topic: "What made you decide to start your sobriety journey?",
+      description: "Share your 'why' - what was the moment or reason that led you here?"
+    },
+    {
+      week: 2,
+      topic: "What healthy habit have you picked up since getting sober?",
+      description: "Maybe it's exercise, cooking, reading, or something else entirely!"
+    },
+    {
+      week: 3,
+      topic: "What's your go-to method for handling cravings?",
+      description: "Share what works for you - movement, distraction, reaching out, something else?"
+    },
+    {
+      week: 4,
+      topic: "How has sobriety changed your relationships?",
+      description: "The good, the challenging, the surprising - all perspectives welcome."
+    },
+    {
+      week: 5,
+      topic: "What's something you've rediscovered about yourself in sobriety?",
+      description: "An old passion, a personality trait, a dream you'd forgotten?"
+    },
+    {
+      week: 6,
+      topic: "What does self-care look like for you in recovery?",
+      description: "How do you take care of yourself physically, mentally, emotionally?"
+    },
+    {
+      week: 7,
+      topic: "What's been the most unexpected benefit of sobriety?",
+      description: "Something you didn't see coming but are grateful for."
+    },
+    {
+      week: 8,
+      topic: "How do you handle social situations or triggers?",
+      description: "Share your strategies for navigating challenging environments."
+    },
+    {
+      week: 9,
+      topic: "What keeps you motivated on the hard days?",
+      description: "Your anchor, your reason, your source of strength."
+    },
+    {
+      week: 10,
+      topic: "What advice would you give to someone on Day 1?",
+      description: "If you could go back and tell your earlier self something, what would it be?"
+    },
+    {
+      week: 11,
+      topic: "How has your sleep/energy/health improved?",
+      description: "Physical changes you've noticed, big or small."
+    },
+    {
+      week: 12,
+      topic: "What does 'one day at a time' mean to you?",
+      description: "How do you practice living in the present moment?"
+    }
+  ];
+
+  const getWeeklyTopic = () => {
+    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+    const today = new Date();
+    const dayOfYear = Math.floor((today - startOfYear) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor(dayOfYear / 7);
+    return weeklyTopics[weekNumber % weeklyTopics.length];
+  };
+
+  const recoveryWords = [
+    { word: 'RESILIENCE', hint: 'The ability to bounce back from difficulties' },
+    { word: 'MINDFULNESS', hint: 'Being present in the moment' },
+    { word: 'GRATITUDE', hint: 'Appreciation for what you have' },
+    { word: 'COURAGE', hint: 'Strength to face fears' },
+    { word: 'PERSEVERANCE', hint: 'Continuing despite obstacles' },
+    { word: 'HEALING', hint: 'The process of becoming whole again' },
+    { word: 'ACCOUNTABILITY', hint: 'Taking responsibility for your choices' },
+    { word: 'AUTHENTICITY', hint: 'Being true to yourself' },
+    { word: 'COMPASSION', hint: 'Kindness toward yourself and others' },
+    { word: 'TRANSFORMATION', hint: 'A complete change in form or nature' },
+    { word: 'EMPOWERMENT', hint: 'Taking control of your life' },
+    { word: 'SERENITY', hint: 'A state of calm and peace' },
+    { word: 'CLARITY', hint: 'Clear understanding and focus' },
+    { word: 'DETERMINATION', hint: 'Firmness of purpose' },
+    { word: 'BREAKTHROUGH', hint: 'A sudden important discovery or development' }
+  ];
+
+  const calmingExercises = [
+    {
+      id: 'breathing',
+      name: '4-7-8 Breathing',
+      icon: Wind,
+      description: 'A simple breathing technique that calms the nervous system',
+      duration: '2-5 minutes',
+      instructions: [
+        'Breathe in through your nose for 4 counts',
+        'Hold your breath for 7 counts',
+        'Exhale through your mouth for 8 counts',
+        'Repeat 4-8 times'
+      ]
+    },
+    {
+      id: 'grounding',
+      name: '5-4-3-2-1 Grounding',
+      icon: Zap,
+      description: 'Use your senses to anchor yourself in the present moment',
+      duration: '3-5 minutes',
+      instructions: [
+        'Name 5 things you can SEE around you',
+        'Name 4 things you can TOUCH or feel',
+        'Name 3 things you can HEAR',
+        'Name 2 things you can SMELL',
+        'Name 1 thing you can TASTE'
+      ]
+    },
+    {
+      id: 'progressive',
+      name: 'Progressive Muscle Relaxation',
+      icon: Music,
+      description: 'Release physical tension by tensing and relaxing muscle groups',
+      duration: '5-10 minutes',
+      instructions: [
+        'Sit or lie down comfortably',
+        'Tense your feet for 5 seconds, then release',
+        'Move up to calves, thighs, stomach, hands, arms, shoulders',
+        'Tense each area for 5 seconds, then fully relax',
+        'Notice the difference between tension and relaxation'
+      ]
+    },
+    {
+      id: 'walking',
+      name: 'Mindful Movement',
+      icon: Heart,
+      description: 'Physical activity to process emotions and reduce stress',
+      duration: '10-20 minutes',
+      instructions: [
+        'Take a walk, even just around your home',
+        'Notice how your feet feel with each step',
+        'Pay attention to your breathing naturally',
+        'If your mind wanders, gently bring focus back to movement',
+        'No need to clear your mind - just move'
+      ]
+    }
+  ];
+
+  const milestones = [
+    { days: 1, message: "Your body begins to metabolize toxins. Withdrawal symptoms may start." },
+    { days: 3, message: "Peak withdrawal period. Your brain chemistry is starting to stabilize." },
+    { days: 7, message: "One week! Sleep patterns begin to normalize. Mood swings may decrease." },
+    { days: 14, message: "Two weeks strong! Mental clarity improves. Physical symptoms continue to fade." },
+    { days: 30, message: "One month milestone! Significant improvements in cognitive function and energy levels." },
+    { days: 60, message: "Two months! Your brain's reward system is healing. Cravings may be less intense." },
+    { days: 90, message: "Three months! Major neurological healing. You've rewired significant addiction pathways." },
+    { days: 180, message: "Six months! Your body has healed considerably. New habits are becoming automatic." },
+    { days: 365, message: "ONE YEAR! Your brain and body have undergone remarkable transformation. You've rebuilt yourself." }
+  ];
+
+  useEffect(() => {
+    const stored = localStorage.getItem('sobrietyDate');
+    if (stored) {
+      setSobrietyDate(stored);
+      calculateDays(stored);
+    }
+    
+    const storedEntries = localStorage.getItem('journalEntries');
+    if (storedEntries) {
+      setJournalEntries(JSON.parse(storedEntries));
+    }
+
+    const storedPosts = localStorage.getItem('forumPosts');
+    if (storedPosts) {
+      setForumPosts(JSON.parse(storedPosts));
+    }
+
+    const storedNotifications = localStorage.getItem('notificationsEnabled');
+    if (storedNotifications) {
+      setNotificationsEnabled(JSON.parse(storedNotifications));
+    }
+
+    const storedLastNotificationDate = localStorage.getItem('lastNotificationDate');
+    if (storedLastNotificationDate) {
+      setLastNotificationDate(storedLastNotificationDate);
+    }
+
+    setCurrentPrompt(journalPrompts[Math.floor(Math.random() * journalPrompts.length)]);
+  }, []);
+
+  useEffect(() => {
+    let interval;
+    if (breathingActive) {
+      interval = setInterval(() => {
+        setBreathPhase(prev => {
+          if (prev === 'inhale') return 'hold';
+          if (prev === 'hold') return 'exhale';
+          return 'inhale';
+        });
+      }, prev => prev === 'hold' ? 7000 : prev === 'exhale' ? 8000 : 4000);
+    }
+    return () => clearInterval(interval);
+  }, [breathingActive]);
+
+  const calculateDays = (startDate) => {
+    const start = new Date(startDate);
+    const today = new Date();
+    const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+    setDayCount(diff);
+  };
+
+  const handleSetDate = (date) => {
+    setSobrietyDate(date);
+    localStorage.setItem('sobrietyDate', date);
+    calculateDays(date);
+  };
+
+  const getCurrentMilestone = () => {
+    return milestones.filter(m => m.days <= dayCount).pop() || milestones[0];
+  };
+
+  const getNextMilestone = () => {
+    return milestones.find(m => m.days > dayCount) || { days: 365, message: "Keep going strong!" };
+  };
+
+  const initMemoryGame = () => {
+    const symbols = ['🌟', '💪', '🌈', '🎯', '🦋', '🌺', '⭐', '🎨'];
+    const cards = [...symbols, ...symbols]
+      .sort(() => Math.random() - 0.5)
+      .map((symbol, idx) => ({ id: idx, symbol, matched: false }));
+    setMemoryCards(cards);
+    setFlippedCards([]);
+    setMatchedCards([]);
+  };
+
+  const handleCardClick = (id) => {
+    if (flippedCards.length === 2 || flippedCards.includes(id) || matchedCards.includes(id)) return;
+
+    const newFlipped = [...flippedCards, id];
+    setFlippedCards(newFlipped);
+
+    if (newFlipped.length === 2) {
+      const [first, second] = newFlipped;
+      if (memoryCards[first].symbol === memoryCards[second].symbol) {
+        setMatchedCards([...matchedCards, first, second]);
+        setGameScore(gameScore + 10);
+        setFlippedCards([]);
+      } else {
+        setTimeout(() => setFlippedCards([]), 1000);
+      }
+    }
+  };
+
+  const startWordGame = () => {
+    const randomWord = recoveryWords[Math.floor(Math.random() * recoveryWords.length)];
+    setCurrentWord(randomWord);
+    setGuessedLetters([]);
+    setWrongGuesses(0);
+    setWordGuess('');
+  };
+
+  const guessLetter = (letter) => {
+    if (guessedLetters.includes(letter) || wrongGuesses >= 6) return;
+    
+    const newGuessed = [...guessedLetters, letter];
+    setGuessedLetters(newGuessed);
+    
+    if (!currentWord.word.includes(letter)) {
+      setWrongGuesses(wrongGuesses + 1);
+    }
+    
+    // Check if won
+    const allLettersGuessed = currentWord.word.split('').every(l => newGuessed.includes(l));
+    if (allLettersGuessed) {
+      setGameScore(gameScore + 20);
+      setGamesWon(gamesWon + 1);
+    }
+  };
+
+  const isGameWon = currentWord && currentWord.word.split('').every(l => guessedLetters.includes(l));
+  const isGameLost = wrongGuesses >= 6;
+
+  const saveJournalEntry = (entry) => {
+    const newEntry = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      prompt: currentPrompt,
+      text: entry,
+      dayCount: dayCount
+    };
+    const updated = [newEntry, ...journalEntries];
+    setJournalEntries(updated);
+    localStorage.setItem('journalEntries', JSON.stringify(updated));
+    setCurrentPrompt(journalPrompts[Math.floor(Math.random() * journalPrompts.length)]);
+  };
+
+  const saveJournalEntryWithPhoto = (entry, photoData) => {
+    const newEntry = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      prompt: currentPrompt,
+      text: entry,
+      photo: photoData,
+      dayCount: dayCount
+    };
+    const updated = [newEntry, ...journalEntries];
+    setJournalEntries(updated);
+    localStorage.setItem('journalEntries', JSON.stringify(updated));
+    setCurrentPrompt(journalPrompts[Math.floor(Math.random() * journalPrompts.length)]);
+  };
+
+  const createForumPost = () => {
+    if (!newPostContent.trim()) return;
+    
+    const post = {
+      id: Date.now(),
+      type: newPostType,
+      content: newPostContent,
+      author: `Day ${dayCount} Warrior`,
+      date: new Date().toLocaleDateString(),
+      likes: 0,
+      replies: [],
+      weekNumber: newPostType === 'weekly' ? getWeeklyTopic().week : null
+    };
+    
+    const updated = [post, ...forumPosts];
+    setForumPosts(updated);
+    localStorage.setItem('forumPosts', JSON.stringify(updated));
+    setNewPostContent('');
+    setShowNewPostForm(false);
+  };
+
+  const likePost = (postId) => {
+    const updated = forumPosts.map(post => 
+      post.id === postId ? { ...post, likes: post.likes + 1 } : post
+    );
+    setForumPosts(updated);
+    localStorage.setItem('forumPosts', JSON.stringify(updated));
+  };
+
+  const addReply = (postId, replyText) => {
+    const reply = {
+      id: Date.now(),
+      author: `Day ${dayCount} Warrior`,
+      content: replyText,
+      date: new Date().toLocaleDateString()
+    };
+    
+    const updated = forumPosts.map(post => 
+      post.id === postId ? { ...post, replies: [...post.replies, reply] } : post
+    );
+    setForumPosts(updated);
+    localStorage.setItem('forumPosts', JSON.stringify(updated));
+  };
+
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        setNotificationsEnabled(true);
+        localStorage.setItem('notificationsEnabled', JSON.stringify(true));
+        sendDailyNotification();
+      }
+    } else {
+      alert('Your browser does not support notifications');
+    }
+  };
+
+  const disableNotifications = () => {
+    setNotificationsEnabled(false);
+    localStorage.setItem('notificationsEnabled', JSON.stringify(false));
+  };
+
+  const sendDailyNotification = () => {
+    const today = new Date().toDateString();
+    
+    if (lastNotificationDate !== today && sobrietyDate) {
+      const affirmation = dailyAffirmations[dayCount % dailyAffirmations.length];
+      const fact = scienceFacts[Math.floor(dayCount / 7) % scienceFacts.length];
+      
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`Day ${dayCount} - You're doing amazing! 🌟`, {
+          body: `${affirmation}\n\n💡 ${fact}`,
+          icon: '✨',
+          badge: '✨'
+        });
+        
+        setLastNotificationDate(today);
+        localStorage.setItem('lastNotificationDate', today);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (notificationsEnabled && sobrietyDate) {
+      sendDailyNotification();
+    }
+  }, [dayCount, notificationsEnabled, sobrietyDate]);
+
+  const HomeTab = () => (
+    <div className="space-y-6">
+      {!sobrietyDate ? (
+        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-8 text-white text-center border-2 border-pink-400" style={{ boxShadow: '0 0 30px rgba(236, 72, 153, 0.5)' }}>
+          <h2 className="text-2xl font-bold mb-4" style={{ textShadow: '0 0 10px #ec4899' }}>🌟 Start Your Journey 🌟</h2>
+          <p className="mb-4">When did your sobriety journey begin?</p>
+          <input
+            type="date"
+            onChange={(e) => handleSetDate(e.target.value)}
+            className="px-4 py-2 rounded-lg text-gray-900 font-bold"
+            max={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="bg-gradient-to-br from-green-500 to-cyan-500 rounded-2xl p-8 text-white text-center border-2 border-cyan-400" style={{ boxShadow: '0 0 30px rgba(6, 182, 212, 0.5)' }}>
+            <Trophy className="w-16 h-16 mx-auto mb-4" style={{ filter: 'drop-shadow(0 0 10px #06b6d4)' }} />
+            <h2 className="text-6xl font-bold mb-2" style={{ textShadow: '0 0 20px #06b6d4' }}>{dayCount}</h2>
+            <p className="text-2xl" style={{ textShadow: '0 0 10px #06b6d4' }}>Days Strong ⭐</p>
+          </div>
+
+          {/* Notifications Toggle */}
+          <div className="bg-gray-800 rounded-xl p-6 border-2 border-yellow-500" style={{ boxShadow: '0 0 20px rgba(234, 179, 8, 0.3)' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {notificationsEnabled ? (
+                  <Bell className="w-6 h-6 text-yellow-400" style={{ filter: 'drop-shadow(0 0 5px #fbbf24)' }} />
+                ) : (
+                  <BellOff className="w-6 h-6 text-gray-400" />
+                )}
+                <div>
+                  <h3 className="font-bold text-yellow-300">Daily Notifications 🔔</h3>
+                  <p className="text-sm text-gray-400">Get daily affirmations & recovery facts</p>
+                </div>
+              </div>
+              {notificationsEnabled ? (
+                <button
+                  onClick={disableNotifications}
+                  className="bg-gray-700 text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold"
+                >
+                  Disable
+                </button>
+              ) : (
+                <button
+                  onClick={requestNotificationPermission}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition font-bold border-2 border-yellow-400"
+                  style={{ boxShadow: '0 0 15px rgba(234, 179, 8, 0.5)' }}
+                >
+                  Enable
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500" style={{ boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="text-pink-400" style={{ filter: 'drop-shadow(0 0 5px #f472b6)' }} />
+              <h3 className="font-bold text-lg text-pink-300">Recovery Milestone 💖</h3>
+            </div>
+            <p className="text-cyan-100">{getCurrentMilestone().message}</p>
+            <div className="mt-4 pt-4 border-t border-gray-700">
+              <p className="text-sm text-cyan-300">Next milestone: Day {getNextMilestone().days} 🎯</p>
+              <div className="w-full bg-gray-700 rounded-full h-3 mt-2 border border-cyan-500">
+                <div 
+                  className="bg-gradient-to-r from-pink-500 to-cyan-500 h-3 rounded-full transition-all"
+                  style={{ 
+                    width: `${(dayCount / getNextMilestone().days) * 100}%`,
+                    boxShadow: '0 0 10px rgba(236, 72, 153, 0.8)'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl p-6 text-white border-2 border-yellow-400" style={{ boxShadow: '0 0 30px rgba(234, 179, 8, 0.4)' }}>
+            <Sparkles className="w-8 h-8 mb-3" style={{ filter: 'drop-shadow(0 0 5px #fbbf24)' }} />
+            <p className="text-lg italic" style={{ textShadow: '0 0 5px rgba(0,0,0,0.3)' }}>"{quotes[dayCount % quotes.length]}" ✨</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl p-6 border-2 border-cyan-500" style={{ boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Brain className="text-cyan-400" style={{ filter: 'drop-shadow(0 0 5px #06b6d4)' }} />
+              <h3 className="font-bold text-lg text-cyan-300">Science Corner 🧬</h3>
+            </div>
+            <p className="text-cyan-100">{scienceFacts[Math.floor(dayCount / 7) % scienceFacts.length]}</p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  const JournalTab = () => {
+    const [newEntry, setNewEntry] = useState('');
+    const [photo, setPhoto] = useState(null);
+    const [photoPreview, setPhotoPreview] = useState(null);
+
+    const handlePhotoChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPhoto(reader.result);
+          setPhotoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    const removePhoto = () => {
+      setPhoto(null);
+      setPhotoPreview(null);
+    };
+
+    const handleSave = () => {
+      if (newEntry.trim() || photo) {
+        if (photo) {
+          saveJournalEntryWithPhoto(newEntry, photo);
+        } else {
+          saveJournalEntry(newEntry);
+        }
+        setNewEntry('');
+        setPhoto(null);
+        setPhotoPreview(null);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500" style={{ boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen className="text-purple-400" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} />
+            <h3 className="font-bold text-lg text-purple-300">Today's Prompt 📝</h3>
+          </div>
+          <p className="text-pink-200 mb-4 italic">{currentPrompt}</p>
+          <textarea
+            className="w-full p-4 bg-gray-900 border-2 border-cyan-500 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none text-cyan-100 placeholder-gray-500"
+            rows="6"
+            placeholder="Write your thoughts... ✨"
+            value={newEntry}
+            onChange={(e) => setNewEntry(e.target.value)}
+            style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.2)' }}
+          />
+          
+          <div className="mt-4">
+            <label className="flex items-center gap-2 text-cyan-300 mb-2 text-sm font-bold">
+              <Camera className="w-4 h-4" style={{ filter: 'drop-shadow(0 0 3px #06b6d4)' }} />
+              Photo of the Day (optional) 📸
+            </label>
+            <p className="text-xs text-gray-400 mb-3">Capture a moment that kept you strong today - a sunset, good meal, your pet, or anything meaningful to you 💖</p>
+            
+            {photoPreview ? (
+              <div className="relative inline-block w-full">
+                <img src={photoPreview} alt="Preview" className="w-full max-h-64 object-cover rounded-lg border-2 border-pink-500" style={{ boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)' }} />
+                <button
+                  onClick={removePhoto}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition border-2 border-white"
+                  style={{ boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)' }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-purple-500 rounded-lg hover:border-pink-500 hover:bg-gray-900 transition cursor-pointer" style={{ boxShadow: '0 0 10px rgba(168, 85, 247, 0.2)' }}>
+                <Camera className="w-6 h-6 text-purple-400" style={{ filter: 'drop-shadow(0 0 5px #a855f7)' }} />
+                <span className="text-purple-300 font-bold">Add Photo ✨</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
+          <button
+            onClick={handleSave}
+            className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition font-bold border-2 border-pink-400"
+            style={{ boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' }}
+          >
+            Save Entry 💾
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-cyan-300" style={{ textShadow: '0 0 10px #06b6d4' }}>Past Entries 📖</h3>
+          {journalEntries.length === 0 ? (
+            <p className="text-gray-400 text-center py-8">No entries yet. Start writing! ✨</p>
+          ) : (
+            journalEntries.map(entry => (
+              <div key={entry.id} className="bg-gray-800 rounded-lg p-4 border-2 border-cyan-500" style={{ boxShadow: '0 0 15px rgba(6, 182, 212, 0.2)' }}>
+                <div className="flex justify-between items-start mb-2">
+                  <p className="text-sm text-gray-400">{entry.date} • Day {entry.dayCount} 🌟</p>
+                </div>
+                <p className="text-sm text-pink-300 italic mb-2">{entry.prompt}</p>
+                {entry.photo && (
+                  <img 
+                    src={entry.photo} 
+                    alt="Journal entry" 
+                    className="w-full max-h-64 object-cover rounded-lg mb-3 border-2 border-purple-500"
+                    style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)' }}
+                  />
+                )}
+                <p className="text-cyan-100">{entry.text}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const GameTab = () => (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white text-center border-2 border-purple-400" style={{ boxShadow: '0 0 30px rgba(168, 85, 247, 0.4)' }}>
+        <Gamepad2 className="w-12 h-12 mx-auto mb-3" style={{ filter: 'drop-shadow(0 0 10px #a855f7)' }} />
+        <h2 className="text-2xl font-bold mb-2" style={{ textShadow: '0 0 10px #a855f7' }}>Recovery Word Challenge 🎮</h2>
+        <p className="text-sm opacity-90">Guess recovery-related words, letter by letter ⭐</p>
+        <p className="text-3xl font-bold mt-4" style={{ textShadow: '0 0 15px #06b6d4' }}>Score: {gameScore}</p>
+        <p className="text-sm mt-2 opacity-90">Games Won: {gamesWon}</p>
+      </div>
+
+      {!currentWord ? (
+        <button
+          onClick={startWordGame}
+          className="w-full bg-gradient-to-r from-green-500 to-cyan-500 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-cyan-600 transition border-2 border-cyan-400"
+          style={{ boxShadow: '0 0 20px rgba(6, 182, 212, 0.5)' }}
+        >
+          Start New Game 🎯
+        </button>
+      ) : (
+        <>
+          {/* Hangman Visual */}
+          <div className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500 text-center" style={{ boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' }}>
+            <div className="text-6xl mb-4">
+              {wrongGuesses === 0 && '😊'}
+              {wrongGuesses === 1 && '😟'}
+              {wrongGuesses === 2 && '😰'}
+              {wrongGuesses === 3 && '😨'}
+              {wrongGuesses === 4 && '😱'}
+              {wrongGuesses === 5 && '😵'}
+              {wrongGuesses >= 6 && '💀'}
+            </div>
+            <p className="text-pink-300 font-bold mb-4">Wrong Guesses: {wrongGuesses} / 6</p>
+            
+            <div className="mb-4">
+              <p className="text-cyan-300 text-sm mb-2">Hint: {currentWord.hint}</p>
+              <div className="flex justify-center gap-2 flex-wrap">
+                {currentWord.word.split('').map((letter, idx) => (
+                  <div 
+                    key={idx} 
+                    className="w-10 h-12 bg-gray-900 border-2 border-cyan-500 rounded flex items-center justify-center text-2xl font-bold text-cyan-100"
+                    style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.3)' }}
+                  >
+                    {guessedLetters.includes(letter) ? letter : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Letter Keyboard */}
+          {!isGameWon && !isGameLost && (
+            <div className="bg-gray-800 rounded-xl p-6 border-2 border-cyan-500" style={{ boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)' }}>
+              <p className="text-cyan-300 font-bold mb-3 text-center">Select a letter:</p>
+              <div className="grid grid-cols-7 gap-2">
+                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => (
+                  <button
+                    key={letter}
+                    onClick={() => guessLetter(letter)}
+                    disabled={guessedLetters.includes(letter)}
+                    className={`py-2 rounded-lg font-bold transition ${
+                      guessedLetters.includes(letter)
+                        ? currentWord.word.includes(letter)
+                          ? 'bg-green-600 text-white border-2 border-green-400'
+                          : 'bg-red-600 text-white border-2 border-red-400'
+                        : 'bg-gradient-to-br from-purple-600 to-pink-600 text-white border-2 border-pink-400 hover:from-purple-700 hover:to-pink-700'
+                    }`}
+                    style={!guessedLetters.includes(letter) ? { boxShadow: '0 0 10px rgba(236, 72, 153, 0.4)' } : {}}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Win/Loss Message */}
+          {isGameWon && (
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 border-2 border-green-400 rounded-xl p-6 text-center" style={{ boxShadow: '0 0 30px rgba(34, 197, 94, 0.5)' }}>
+              <p className="text-3xl mb-2">🎉 You Won! 🎉</p>
+              <p className="text-white font-bold mb-2">The word was: {currentWord.word}</p>
+              <p className="text-sm text-white mb-4">{currentWord.hint}</p>
+              <button
+                onClick={startWordGame}
+                className="bg-white text-green-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition font-bold border-2 border-green-300"
+              >
+                Play Again 🔄
+              </button>
+            </div>
+          )}
+
+          {isGameLost && (
+            <div className="bg-gradient-to-r from-red-500 to-pink-500 border-2 border-red-400 rounded-xl p-6 text-center" style={{ boxShadow: '0 0 30px rgba(239, 68, 68, 0.5)' }}>
+              <p className="text-3xl mb-2">💔 Game Over 💔</p>
+              <p className="text-white font-bold mb-2">The word was: {currentWord.word}</p>
+              <p className="text-sm text-white mb-4">{currentWord.hint}</p>
+              <button
+                onClick={startWordGame}
+                className="bg-white text-red-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition font-bold border-2 border-red-300"
+              >
+                Try Again 🔄
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              setCurrentWord(null);
+              setGuessedLetters([]);
+              setWrongGuesses(0);
+            }}
+            className="w-full bg-gray-700 text-gray-300 py-3 rounded-lg hover:bg-gray-600 transition font-bold border-2 border-gray-600"
+          >
+            ⬅️ Back to Menu
+          </button>
+        </>
+      )}
+
+      <div className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500" style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)' }}>
+        <h3 className="font-bold text-purple-300 mb-2">About This Game 🎯</h3>
+        <p className="text-cyan-100 text-sm">Guess recovery-themed words letter by letter. Each word relates to strength, healing, and growth. You have 6 wrong guesses before the game ends. Win points for each correct guess!</p>
+      </div>
+    </div>
+  );
+
+  const CalmTab = () => (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-br from-teal-600 to-cyan-600 rounded-xl p-6 text-white border-2 border-cyan-400" style={{ boxShadow: '0 0 30px rgba(6, 182, 212, 0.4)' }}>
+        <h2 className="text-2xl font-bold mb-2" style={{ textShadow: '0 0 10px #06b6d4' }}>Find Your Calm ✨</h2>
+        <p className="text-sm opacity-90">Different tools work for different people. Try what feels right for you today! 💫</p>
+      </div>
+
+      {!activeExercise ? (
+        <div className="space-y-4">
+          {calmingExercises.map(exercise => {
+            const Icon = exercise.icon;
+            return (
+              <button
+                key={exercise.id}
+                onClick={() => setActiveExercise(exercise)}
+                className="w-full bg-gray-800 rounded-xl p-6 hover:bg-gray-700 transition text-left border-2 border-purple-500 hover:border-pink-500"
+                style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.3)' }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-3 rounded-lg border-2 border-pink-400" style={{ boxShadow: '0 0 10px rgba(236, 72, 153, 0.4)' }}>
+                    <Icon className="w-8 h-8 text-white" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1 text-cyan-300">{exercise.name}</h3>
+                    <p className="text-gray-300 text-sm mb-2">{exercise.description}</p>
+                    <p className="text-pink-400 text-sm font-bold">{exercise.duration} ⏱️</p>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-gray-800 rounded-xl p-6 border-2 border-cyan-500" style={{ boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)' }}>
+          <div className="flex items-center gap-3 mb-6">
+            {React.createElement(activeExercise.icon, { className: "w-8 h-8 text-cyan-400", style: { filter: 'drop-shadow(0 0 5px #06b6d4)' } })}
+            <h3 className="font-bold text-xl text-cyan-300">{activeExercise.name}</h3>
+          </div>
+          
+          {activeExercise.id === 'breathing' && (
+            <div className="mb-6">
+              <div className="flex justify-center mb-6">
+                <div className={`w-32 h-32 rounded-full bg-gradient-to-br from-pink-500 to-cyan-500 flex items-center justify-center text-white font-bold text-xl transition-all duration-1000 border-4 border-white ${
+                  breathingActive ? (breathPhase === 'inhale' ? 'scale-150' : breathPhase === 'hold' ? 'scale-150' : 'scale-100') : 'scale-100'
+                }`} style={{ boxShadow: breathingActive ? '0 0 40px rgba(236, 72, 153, 0.8)' : '0 0 20px rgba(6, 182, 212, 0.5)' }}>
+                  {breathingActive ? (breathPhase === 'inhale' ? '✨ Inhale' : breathPhase === 'hold' ? '💫 Hold' : '🌟 Exhale') : 'Ready ✨'}
+                </div>
+              </div>
+              <button
+                onClick={() => setBreathingActive(!breathingActive)}
+                className={`w-full py-3 rounded-lg font-bold transition border-2 ${
+                  breathingActive 
+                    ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white border-red-400' 
+                    : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-cyan-400'
+                }`}
+                style={{ boxShadow: breathingActive ? '0 0 20px rgba(239, 68, 68, 0.5)' : '0 0 20px rgba(6, 182, 212, 0.5)' }}
+              >
+                {breathingActive ? '⏸️ Stop' : '▶️ Start Breathing Exercise'}
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-3 mb-6">
+            {activeExercise.instructions.map((instruction, idx) => (
+              <div key={idx} className="flex gap-3">
+                <div className="bg-gradient-to-br from-pink-500 to-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 border-2 border-pink-400" style={{ boxShadow: '0 0 10px rgba(236, 72, 153, 0.5)' }}>
+                  {idx + 1}
+                </div>
+                <p className="text-cyan-100">{instruction}</p>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              setActiveExercise(null);
+              setBreathingActive(false);
+            }}
+            className="w-full bg-gray-700 text-cyan-300 py-3 rounded-lg font-bold hover:bg-gray-600 transition border-2 border-gray-600"
+          >
+            ⬅️ Back to Exercises
+          </button>
+        </div>
+      )}
+
+      <div className="bg-gray-800 rounded-xl p-6 border-2 border-teal-500" style={{ boxShadow: '0 0 15px rgba(20, 184, 166, 0.3)' }}>
+        <h3 className="font-bold mb-3 text-teal-300">Remember: 💭</h3>
+        <ul className="space-y-2 text-sm text-cyan-100">
+          <li>✨ It's okay if traditional meditation feels impossible right now</li>
+          <li>💫 Your mind will wander - that's completely normal</li>
+          <li>🌟 Physical movement can be just as calming as stillness</li>
+          <li>💖 There's no "wrong" way to do these exercises</li>
+          <li>⭐ Even 2 minutes can make a difference</li>
+        </ul>
+      </div>
+    </div>
+  );
+
+  const ForumTab = () => {
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [replyText, setReplyText] = useState('');
+    const weeklyTopic = getWeeklyTopic();
+
+    const postTypeColors = {
+      story: { bg: 'from-green-600 to-emerald-600', border: 'border-green-400', label: '✨ Success Story' },
+      advice: { bg: 'from-blue-600 to-cyan-600', border: 'border-cyan-400', label: '💡 Seeking Advice' },
+      tip: { bg: 'from-purple-600 to-pink-600', border: 'border-pink-400', label: '🎯 Tip to Share' },
+      support: { bg: 'from-orange-600 to-yellow-600', border: 'border-yellow-400', label: '💪 Need Support' },
+      weekly: { bg: 'from-indigo-600 to-purple-600', border: 'border-indigo-400', label: '📅 Weekly Topic' }
+    };
+
+    const handleReply = (postId) => {
+      if (replyText.trim()) {
+        addReply(postId, replyText);
+        setReplyText('');
+        setReplyingTo(null);
+      }
+    };
+
+    const weeklyPosts = forumPosts.filter(post => post.type === 'weekly' && post.weekNumber === weeklyTopic.week);
+    const regularPosts = forumPosts.filter(post => post.type !== 'weekly');
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-6 text-white border-2 border-pink-400" style={{ boxShadow: '0 0 30px rgba(236, 72, 153, 0.4)' }}>
+          <div className="flex items-center gap-3 mb-2">
+            <Users className="w-8 h-8" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} />
+            <h2 className="text-2xl font-bold" style={{ textShadow: '0 0 10px #ec4899' }}>Community Forum 💬</h2>
+          </div>
+          <p className="text-sm opacity-90">Share your journey, ask questions, support others 💖</p>
+        </div>
+
+        {/* Weekly Discussion Topic */}
+        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white border-2 border-indigo-400" style={{ boxShadow: '0 0 30px rgba(99, 102, 241, 0.5)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-7 h-7" style={{ filter: 'drop-shadow(0 0 5px #fff)' }} />
+            <h3 className="text-xl font-bold" style={{ textShadow: '0 0 10px #6366f1' }}>This Week's Discussion 📅</h3>
+          </div>
+          <h4 className="text-lg font-bold mb-2">{weeklyTopic.topic}</h4>
+          <p className="text-sm opacity-90 mb-4">{weeklyTopic.description}</p>
+          
+          <button
+            onClick={() => {
+              setNewPostType('weekly');
+              setShowNewPostForm(true);
+            }}
+            className="bg-white text-indigo-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition font-bold"
+          >
+            Share Your Thoughts 💭
+          </button>
+
+          {/* Weekly Topic Responses */}
+          {weeklyPosts.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-indigo-400">
+              <p className="text-sm font-bold mb-3">{weeklyPosts.length} {weeklyPosts.length === 1 ? 'person has' : 'people have'} shared so far 🌟</p>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {weeklyPosts.slice(0, 3).map(post => (
+                  <div key={post.id} className="bg-indigo-800 bg-opacity-50 rounded-lg p-3 text-sm">
+                    <p className="text-xs text-indigo-200 mb-1">{post.author}</p>
+                    <p className="text-white">{post.content.substring(0, 100)}{post.content.length > 100 ? '...' : ''}</p>
+                  </div>
+                ))}
+              </div>
+              {weeklyPosts.length > 3 && (
+                <p className="text-xs text-indigo-200 mt-2">+ {weeklyPosts.length - 3} more responses below</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {!showNewPostForm ? (
+          <button
+            onClick={() => setShowNewPostForm(true)}
+            className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-cyan-700 hover:to-purple-700 transition border-2 border-cyan-400"
+            style={{ boxShadow: '0 0 20px rgba(6, 182, 212, 0.5)' }}
+          >
+            ✍️ Create New Post
+          </button>
+        ) : (
+          <div className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500" style={{ boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' }}>
+            <h3 className="font-bold text-lg text-purple-300 mb-4">New Post</h3>
+            
+            <div className="mb-4">
+              <label className="text-cyan-300 text-sm font-bold mb-2 block">Post Type:</label>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(postTypeColors).filter(([type]) => type !== 'weekly').map(([type, config]) => (
+                  <button
+                    key={type}
+                    onClick={() => setNewPostType(type)}
+                    className={`py-2 px-4 rounded-lg font-bold transition border-2 ${
+                      newPostType === type 
+                        ? `bg-gradient-to-r ${config.bg} text-white ${config.border}` 
+                        : 'bg-gray-700 text-gray-400 border-gray-600'
+                    }`}
+                  >
+                    {config.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <textarea
+              className="w-full p-4 bg-gray-900 border-2 border-cyan-500 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none text-cyan-100 placeholder-gray-500 mb-4 resize-none"
+              rows="4"
+              placeholder="Share your thoughts... 💭"
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+              style={{ boxShadow: '0 0 10px rgba(6, 182, 212, 0.2)' }}
+              onFocus={(e) => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={createForumPost}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition font-bold border-2 border-pink-400"
+                style={{ boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' }}
+              >
+                Post 📤
+              </button>
+              <button
+                onClick={() => {
+                  setShowNewPostForm(false);
+                  setNewPostContent('');
+                }}
+                className="px-6 bg-gray-700 text-gray-300 py-2 rounded-lg hover:bg-gray-600 transition font-bold border-2 border-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-cyan-300" style={{ textShadow: '0 0 10px #06b6d4' }}>Community Posts 💬</h3>
+          {regularPosts.length === 0 && weeklyPosts.length === 0 ? (
+            <div className="text-center py-12 bg-gray-800 rounded-xl border-2 border-gray-700">
+              <MessageCircle className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+              <p className="text-gray-400">No posts yet. Be the first to share! ✨</p>
+            </div>
+          ) : (
+            forumPosts.map(post => {
+              const typeConfig = postTypeColors[post.type];
+              return (
+                <div key={post.id} className="bg-gray-800 rounded-xl p-6 border-2 border-purple-500" style={{ boxShadow: '0 0 15px rgba(168, 85, 247, 0.2)' }}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r ${typeConfig.bg} text-white border-2 ${typeConfig.border} mb-2`}>
+                        {typeConfig.label}
+                      </span>
+                      <p className="text-sm text-gray-400">{post.author} • {post.date}</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-cyan-100 mb-4">{post.content}</p>
+                  
+                  <div className="flex items-center gap-4 pb-4 border-b border-gray-700">
+                    <button
+                      onClick={() => likePost(post.id)}
+                      className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition"
+                    >
+                      <ThumbsUp className="w-5 h-5" />
+                      <span className="font-bold">{post.likes}</span>
+                    </button>
+                    <button
+                      onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
+                      className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      <span className="font-bold">{post.replies.length} Replies</span>
+                    </button>
+                  </div>
+
+                  {post.replies.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                      {post.replies.map(reply => (
+                        <div key={reply.id} className="bg-gray-900 rounded-lg p-4 border-l-4 border-cyan-500">
+                          <p className="text-sm text-gray-400 mb-2">{reply.author} • {reply.date}</p>
+                          <p className="text-cyan-100">{reply.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {replyingTo === post.id && (
+                    <div className="mt-4">
+                      <textarea
+                        className="w-full p-3 bg-gray-900 border-2 border-cyan-500 rounded-lg focus:ring-2 focus:ring-pink-500 outline-none text-cyan-100 placeholder-gray-500 mb-2 resize-none"
+                        rows="3"
+                        placeholder="Write your reply... 💬"
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        onFocus={(e) => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleReply(post.id)}
+                          className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-cyan-700 hover:to-purple-700 transition font-bold"
+                        >
+                          <Send className="w-4 h-4" />
+                          Send Reply
+                        </button>
+                        <button
+                          onClick={() => setReplyingTo(null)}
+                          className="px-4 bg-gray-700 text-gray-300 py-2 rounded-lg hover:bg-gray-600 transition"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 p-4" style={{ fontFamily: "'Courier New', 'Courier', monospace" }}>
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border-2 border-cyan-500">
+          <div className="bg-gradient-to-r from-purple-900 via-pink-900 to-cyan-900 p-6 text-white border-b-2 border-cyan-500">
+            <h1 className="text-4xl font-bold text-center" style={{ textShadow: '0 0 20px #06b6d4, 0 0 40px #ec4899' }}>✨ Daybreak ✨</h1>
+            <p className="text-center text-cyan-300 mt-2" style={{ textShadow: '0 0 10px #06b6d4' }}>One day at a time 💫</p>
+          </div>
+
+          <div className="p-6">
+            {activeTab === 'home' && <HomeTab />}
+            {activeTab === 'journal' && <JournalTab />}
+            {activeTab === 'calm' && <CalmTab />}
+            {activeTab === 'forum' && <ForumTab />}
+            {activeTab === 'games' && <GameTab />}
+          </div>
+
+          <div className="bg-gray-800 border-t-2 border-cyan-500 flex justify-around p-2">
+            <button
+              onClick={() => setActiveTab('home')}
+              className={`flex flex-col items-center p-2 rounded-lg transition ${
+                activeTab === 'home' ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              style={activeTab === 'home' ? { boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' } : {}}
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-xs mt-1 font-bold">Home</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('journal')}
+              className={`flex flex-col items-center p-2 rounded-lg transition ${
+                activeTab === 'journal' ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              style={activeTab === 'journal' ? { boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' } : {}}
+            >
+              <BookOpen className="w-5 h-5" />
+              <span className="text-xs mt-1 font-bold">Journal</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('calm')}
+              className={`flex flex-col items-center p-2 rounded-lg transition ${
+                activeTab === 'calm' ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              style={activeTab === 'calm' ? { boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' } : {}}
+            >
+              <Wind className="w-5 h-5" />
+              <span className="text-xs mt-1 font-bold">Calm</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('forum')}
+              className={`flex flex-col items-center p-2 rounded-lg transition ${
+                activeTab === 'forum' ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              style={activeTab === 'forum' ? { boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' } : {}}
+            >
+              <Users className="w-5 h-5" />
+              <span className="text-xs mt-1 font-bold">Community</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('games')}
+              className={`flex flex-col items-center p-2 rounded-lg transition ${
+                activeTab === 'games' ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              style={activeTab === 'games' ? { boxShadow: '0 0 15px rgba(236, 72, 153, 0.5)' } : {}}
+            >
+              <Gamepad2 className="w-5 h-5" />
+              <span className="text-xs mt-1 font-bold">Games</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SobrietyApp;
